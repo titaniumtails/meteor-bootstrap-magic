@@ -1,7 +1,3 @@
-#i18n snub
-UI.registerHelper "__", (keyName) -> 
-  return keyName
-
 reactive =
   overrides : new ReactiveDict
   defaults : new ReactiveDict
@@ -35,10 +31,6 @@ UI.registerHelper 'BootstrapMagicOverride', ->
   reactive.overrides.get(@key) || reactive.defaults.get(@key)
 
 #Something for Everyone
-format = (str, del) -> str.replace(/\s+/g, del || '-').toLowerCase()
-formatCamel = (str) -> 
-  str = str.replace(/([^A-Za-z0-9\.\$])|([A-Z])(?=[A-Z][a-z])|([^\-\$\.0-9])(?=\$?[0-9]+(?:\.[0-9]+)?)|([0-9])(?=[^\.0-9])|([a-z])(?=[A-Z])/g, '$2$3$4$5 ')
-  str.charAt(0).toUpperCase() + str.slice(1)
 camelToSnake = (str) -> str.replace(/\W+/g, '_').replace(/([a-z\d])([A-Z])/g, '$1-$2')
 
 @currentSubCat = new ReactiveVar()
@@ -70,12 +62,7 @@ objByCat = ->
   myCat = currentCat.get()
   _.where(bootstrap_magic_variables, { category: myCat })
 
-showAndRm = ->
-  $('.sub-cat-message h4').remove()
-  $('.sub-cat-item').show()
-
 #Time for Templates
-
 Template._bootstrap_magic.created = ->
   # trigger start event
   BootstrapMagic.start() if BootstrapMagic.start
@@ -87,7 +74,6 @@ Template._bootstrap_magic.rendered = ->
     currentSubCat.get()
     currentCat.get()
     Meteor.defer -> initColorPicker($('.color-picker-area'))
-
 
 Template._bootstrap_magic.helpers
   
@@ -101,7 +87,6 @@ Template._bootstrap_magic.helpers
   "subCategories" : ->  _.map objByCat(), (obj) -> obj
   "previewTmpl" : -> Template["bootstrap_magic_preview_#{camelToSnake @keyName}"] || null
   "inputTmpl" : -> Template["bootstrap_magic_input_#{@type}"] || null
-  "formattedCat" : -> formatCamel @category
   "typeIs" : (type) -> @type is type
   "currentSubCat" : getCurrentSubCat
   "isSelectedCat" : -> @category is currentCat.get()
@@ -114,15 +99,8 @@ Template._bootstrap_magic.events
 
   'click .menu-secondary-list' : -> 
     currentCat.set(@category)
-    if (_.map objByCat(), (obj) -> obj).length is 1
-      currentSubCat.set(objByCat()[0].keyName)
-      showAndRm()
-    else
-      $('.sub-cat-message').html("<h4>Please select a submenu tab</h4>")
-      $('.sub-cat-item').hide()
+    currentSubCat.set(objByCat()[0].keyName)      
  
-  'click .menu-tertiary-list' : -> 
-    currentSubCat.set(@keyName)
-    showAndRm()
+  'click .menu-tertiary-list' : -> currentSubCat.set(@keyName)
 
-  # 'click #reset' :-> do something
+  # 'click #reset' :-> setDefaults(obj)
